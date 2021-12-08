@@ -1,0 +1,52 @@
+{{- if .Values.apimgr.enabled -}}
+{{- if ne .Values.global.platform "OPENSHIFT" }}
+
+{{- $apimgrName := include "apimgr.name" . -}}
+{{- $domainName := include "domain.name" . -}}
+{{ $hasIngressV1 := "false" }}
+{{ if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" }}
+  {{ $hasIngressV1 := true }}
+{{ end }}
+
+{{- if eq $hasIngressV1 "true" }}
+apiVersion: networking.k8s.io/v1
+{{- else }}
+apiVersion: networking.k8s.io/v1beta1
+{{- end }}
+kind: Ingress
+metadata:
+  name: {{ template "apimgr.name" . }}
+  labels: {{ include "apimgr.labels" . | nindent 4 }}
+  {{- with .Values.apimgr.ingress.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.apimgr.ingress.tls }}
+  tls:
+{{ toYaml .Values.apimgr.ingress.tls | indent 4 }}
+  {{- end }}
+  rules:
+{{- range .Values.apimgr.service.ports }}
+  {{- if .ingress.enabled }}
+  - host: {{ .ingress.host }}.{{ $domainName }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          {{- if eq $hasIngressV1 "true" }}
+          service:
+            name: {{ $apimgrName }}
+            port:
+              number: {{ .port }}
+          {{- else }}
+          serviceName: {{ $apimgrName }}
+          servicePort: {{ .port }}
+          {{- end }}
+  {{- end }}
+{{- end }}
+
+
+{{- end }}
+{{- end }}

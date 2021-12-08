@@ -1,0 +1,201 @@
+{{- if .Values.anm.enabled -}}
+
+{{- $imageTag := include "imageTag" . -}}
+{{- $imagePullPolicy := include "imagePullPolicy" . -}}
+{{- $check := include "validateDockerRepo" . -}}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "anm.name" . }}
+  labels: {{- include "anm.labels" . | nindent 4 }}
+  annotations:
+    {{- range $key, $value := .Values.anm.deploymentAnnotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+spec:
+  replicas: {{ .Values.anm.replicas }}
+  selector:
+    matchLabels:
+      {{- include "anm.selectorLabels" . | nindent 6 }}
+  strategy:
+{{ toYaml .Values.anm.updateStrategy | indent 4 }}
+  template:
+    metadata:
+      name: "{{ template "anm.name" . }}"
+      labels: 
+        {{- include "anm.selectorLabels" . | nindent 8 }}
+      annotations:
+        {{- range $key, $value := .Values.anm.podAnnotations }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+    spec:
+{{- if .Values.anm.priorityClassName }}
+      priorityClassName: {{ .Values.anm.priorityClassName }}
+{{- end }}
+      securityContext:
+{{ toYaml .Values.anm.podSecurityContext | indent 8 }}
+      {{- if .Values.anm.serviceAccount }}
+      serviceAccount: {{ .Values.anm.serviceAccount }}
+      {{- end }}
+      {{- if .Values.anm.hostAliases }}
+      hostAliases: {{ toYaml .Values.anm.hostAliases | nindent 6 }}
+      {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.anm.terminationGracePeriod }}
+      volumes:
+        - name: events
+{{- if .Values.pvcs.events.enabled }}
+          persistentVolumeClaim:
+            claimName: apigw-events
+{{- else }}
+          emptyDir: {}
+{{- end }}
+        - name: audit
+{{- if .Values.pvcs.audit.enabled }}
+          persistentVolumeClaim:
+            claimName: apigw-audit
+{{- else }}
+          emptyDir: {}
+{{- end }}
+        {{- if .Values.anm.jvm.enabled }}
+        - name: anm-jvmxml
+          configMap:
+            name: jvmxml
+            items:
+              - key: anm-jvmxml
+                path: jvm.xml
+        {{- end }}
+        {{- range .Values.anm.secretMounts }}
+        - name: {{ .name }}
+          secret:
+            secretName: {{ .secretName }}
+        {{- end }}
+        {{- if .Values.anm.extraVolumes }}
+{{ toYaml ( .Values.anm.extraVolumes ) | indent 8 }}
+        {{- end }}
+      
+      {{- with .Values.anm.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+      {{- end }}
+      {{- with .Values.anm.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+      {{- end }}
+      {{- with .Values.anm.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+      {{- end }}
+      {{- if .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.global.imagePullSecrets | indent 6 }}
+      {{- end }}
+      initContainers:
+      {{- if .Values.mysqlmetrics.internal }}
+      - name: init-mysql
+        image: busybox:1.33
+        command: ['sh', '-c', 'until nc -w 3 -v {{ template "mysqlmetrics.name" . }} {{ .Values.mysqlmetrics.primary.service.port }}; do echo waiting for mysql; sleep 2; done;']
+      {{- end }}
+      {{- if .Values.anm.extraInitContainers }}
+{{ tpl .Values.anm.extraInitContainers . | indent 6 }}
+      {{- end }}
+      containers:
+      - name: "{{ template "anm.name" . }}"
+      {{- if .Values.anm.args }}
+        args:
+{{ toYaml .Values.anm.args | indent 8 }}
+      {{- end }}
+      {{- if .Values.anm.command }}
+        command:
+{{ toYaml .Values.anm.command | indent 8 }}
+      {{- end }}
+        securityContext:
+{{ toYaml .Values.anm.securityContext | indent 10 }}
+        {{- if .Values.base.useImagestream }}
+        command: ["sh", "-c", "tail -f /dev/null" ]
+        image: {{ .Values.anm.image }}:{{ $imageTag }}
+        {{- else }}
+        image: {{ .Values.global.dockerRepository }}/{{ .Values.anm.image }}:{{ $imageTag }}
+        {{- end }}
+        imagePullPolicy: {{ $imagePullPolicy }}
+        livenessProbe:
+{{ toYaml .Values.anm.livenessProbe | indent 10 }}
+        readinessProbe:
+{{ toYaml .Values.anm.readinessProbe | indent 10 }}
+        ports:
+        {{- range $key, $value := .Values.anm.containerPorts }}
+        - name: {{ $key }}
+          containerPort: {{ $value }}
+        {{- end }}
+        {{- if .Values.anm.extraPorts }}
+{{- toYaml .Values.anm.extraPorts | nindent 8 }}
+        {{- end }}
+        resources:
+{{ toYaml .Values.anm.resources | indent 10 }}
+        env:
+        - name: EMT_TOPOLOGY_TTL
+          value: {{ default "120" .Values.anm.config.emtTopologyTtl | quote }}
+        - name: EMT_DEPLOYMENT_ENABLED
+          value: {{ default "false" .Values.anm.config.emtDeploymentEnabled | quote }}
+        - name: EMT_TOPOLOGY_LOG_DEST
+          value: {{ default "1" .Values.anm.config.emtTopologyLogDest | quote }}
+        - name: EMT_TOPOLOGY_LOG_DIR
+          value: {{ default "/opt/Axway/apigateway/logs" .Values.anm.config.emtTopologyLogDir | quote }}
+        - name: EMT_TOPOLOGY_LOG_ENABLED
+          value: {{ default "false" .Values.anm.config.emtTopologyLogEnabled | quote }}
+        - name: EMT_TOPOLOGY_LOG_INTERVAL
+          value: {{ default "60" .Values.anm.config.emtTopologyLogInterval | quote }}
+        - name: EMT_HEAP_SIZE_MB
+          value: {{ default "1024" .Values.anm.config.emtHeapSize | quote }}
+        - name: EMT_TRACE_LEVEL
+          value: {{ default "INFO" .Values.anm.config.emtTraceLevel | quote }}
+        - name: EMT_PARENT_HOST
+          value: {{ default "anm" .Values.anm.config.emtParentHost | quote }}
+{{- if .Values.mysqlmetrics.internal }}
+        - name: METRICS_DB_URL
+          value: "jdbc:mysql://{{ template "mysqlmetrics.name" . }}:{{ .Values.mysqlmetrics.primary.service.port }}/{{ .Values.mysqlmetrics.auth.database }}?useSSL={{ .Values.mysqlmetrics.ssl }}"
+        - name: METRICS_DB_USERNAME
+          value: {{ .Values.mysqlmetrics.auth.username | quote }}
+        - name: METRICS_DB_PASS
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mysql.metrics.secretName" . }}
+              key: mysql-password
+{{- else if .Values.externalMetricsDB.env }}
+{{ toYaml .Values.externalMetricsDB.env | nindent 8 }}
+{{- end }}
+        {{- if .Values.anm.extraEnvs }}
+{{ toYaml .Values.anm.extraEnvs | indent 8 }}
+        {{- end }}
+        {{- if .Values.anm.envFrom }}
+        envFrom:
+{{ toYaml .Values.anm.envFrom | indent 8 }}
+        {{- end }}
+        volumeMounts:
+          - name: events
+            mountPath: {{ default "/opt/Axway/apigateway/events" .Values.anm.volumeMountsPaths.events | quote }}
+          - name: audit
+            mountPath: {{ default "/opt/Axway/apigateway/logs" .Values.anm.volumeMountsPaths.audit | quote }}
+          {{- if .Values.anm.jvm.enabled }}
+          - name: anm-jvmxml
+            mountPath: "/opt/Axway/apigateway/conf/jvm.xml"
+            subPath: jvm.xml
+          {{- end }}
+          {{- range .Values.anm.secretMounts }}
+          - name: {{ .name }}
+            mountPath: {{ .path }}
+            {{- if .subPath }}
+            subPath: {{ .subPath }}
+            {{- end }}
+          {{- end }}
+        {{- if .Values.anm.extraVolumeMounts }}
+{{ toYaml (.Values.anm.extraVolumeMounts ) | indent 8 }}
+        {{- end }}
+        {{- if .Values.anm.lifecycle }}
+        lifecycle:
+{{ toYaml .Values.anm.lifecycle | indent 10 }}
+        {{- end }}
+        {{- if .Values.anm.extraContainers }}
+{{ toYaml .Values.anm.extraContainers | indent 6 }}
+        {{- end }}
+{{- end }}

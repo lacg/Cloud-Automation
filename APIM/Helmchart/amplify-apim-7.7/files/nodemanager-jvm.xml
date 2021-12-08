@@ -1,3 +1,0 @@
-<ConfigurationFragment>
-	<VMArg name="-Ddont.expect.100.continue=true"/>
-</ConfigurationFragment>

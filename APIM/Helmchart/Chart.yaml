@@ -1,0 +1,52 @@
+apiVersion: v2
+
+appVersion: 7.7-20210830
+
+version: "2.0.0"
+
+description: Package for demo instance of Axway AMPLIFY API Management.
+icon: https://images.app.goo.gl/MbQyRo2M2jzAsed79
+home: https://github.com/Axway/Cloud-Automation/tree/master/APIM/Helmchart
+keywords:
+- API Management, Axway, AMPLIFY API, Demo, Azure
+maintainers:
+- email: ncomandini@axway.com
+  name: cloud-automation community
+- email: cwiechmann@axway.com
+  name: cloud-automation community
+name: axway-apim
+# Must have the -ro extension to support version such as v1.18.20-eks-8c579e (See https://github.com/helm/helm/issues/3810)
+kubeVersion: ">=v1.11.x-r0"
+
+dependencies:
+  - name: common
+    repository: https://charts.bitnami.com/bitnami
+    tags:
+      - bitnami-common
+    version: 1.x.x
+  - name: cassandra
+    alias: cassandra
+    repository: https://charts.bitnami.com/bitnami
+    version: 7.7.3 # Installs Cassandra 3.11.11
+    condition: cassandra.internal
+  - name: mysql
+    alias: mysqlmetrics
+    repository: https://charts.bitnami.com/bitnami
+    tags:
+      - bitnami/mysql
+    version: 8.x.x
+    condition: mysqlmetrics.internal
+  - name: mysql
+    alias: mysqlapiportal
+    repository: https://charts.bitnami.com/bitnami
+    tags:
+      - bitnami/mysql
+    version: 8.x.x
+    condition: mysqlapiportal.internal
+  - name: redis
+    alias: apiportalredis
+    repository: https://charts.bitnami.com/bitnami
+    tags:
+      - bitnami/redis
+    version: 15.x.x
+    condition: apiportal.redis.internal
