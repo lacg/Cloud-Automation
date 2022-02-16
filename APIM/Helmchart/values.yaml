@@ -27,7 +27,7 @@ global:
    # into the API Gateway PODs. 
    # Alternatively, you can use your own secret and reference it via licenseSecretName below.
    # Or you can build the image with the license included.
-   license: {}
+   # license: |
       # FIPS=1
       # SalesForce Connector=1
       # ServiceNow Connector=1
@@ -104,9 +104,15 @@ anm:
 
    # Allows you to add any config files
    extraVolumes: []
+   # - name: axway-apigateway-admin-users
+   #   secret:
+   #     secretName: axway-apigateway-admin-users
    # - name: extras
    #   emptyDir: {}
    extraVolumeMounts: []
+   # - name: axway-apigateway-admin-users
+   #   mountPath: mountPath: /opt/Axway/apigateway/conf/adminUsers.json
+   #   subPath: adminUsers.json
    # - name: extras
    #   mountPath: /usr/share/extras
    #   readOnly: true
@@ -177,6 +183,15 @@ anm:
       limits:
          cpu: "500m"
          memory: "1Gi"
+
+   # Resources for all Admin-Node-Manager Init-Containers
+   initResources: {}
+   #   requests:
+   #      cpu: "25m"
+   #      memory: "80Mi"
+   #   limits:
+   #      cpu: "25m"
+   #      memory: "80Mi"
 
    args: 
    - /opt/Axway/apigateway/posix/bin/start-emt-nodemanager
@@ -302,8 +317,8 @@ apimgr:
            value: liveness.apimgr
          scheme: HTTPS
       initialDelaySeconds: 300
-      periodSeconds: 10
-      timeoutSeconds: 5
+      periodSeconds: 30
+      timeoutSeconds: 15
       failureThreshold: 3
       successThreshold: 1
 
@@ -314,6 +329,15 @@ apimgr:
       limits:
          cpu: "500m"
          memory: "1Gi"
+
+   # Resources for all API-Manager Init-Containers
+   initResources: {}
+   #   requests:
+   #      cpu: "25m"
+   #      memory: "80Mi"
+   #   limits:
+   #      cpu: "25m"
+   #      memory: "80Mi"
 
    lifecycle:
       preStop:
@@ -393,8 +417,8 @@ apitraffic:
         nodePort: ""
         # Ingress is currently not supported for HTTP-Connections - Would required another Ingress with additional annotations
         ingress: 
-         enabled: false
-         host: plain
+          enabled: false
+          host: plain
 
    # Configuration is based on environment variables as desribed here:
    # https://docs.axway.com/bundle/axway-open-docs/page/docs/apim_installation/apigw_containers/container_env_variables/index.html#environment-variables-reference
@@ -409,7 +433,9 @@ apitraffic:
 
    ingress:
       enabled: true
-      name: api
+      # Please note: Only basic ingress settings are configured here. 
+      # The individual ingress resources are configured for the individual service ports. 
+      # See for example: service.ports.oauth.ingress....
       annotations: {}
          # kubernetes.io/ingress.class: azure/application-gateway
          # appgw.ingress.kubernetes.io/backend-protocol: https
@@ -422,6 +448,7 @@ apitraffic:
       #  - secretName: chart-example-tls
       #    hosts:
       #      - chart-example.local
+      # 
 
    # Defines where to mount required standard volumes such as events, opentraffic, etc. into the container
    volumeMountsPaths:
@@ -454,6 +481,15 @@ apitraffic:
          cpu: "1000m"
          memory: "1536Mi"
 
+   # Resources for all API-Traffic (API-Gateway) Init-Containers
+   initResources: {}
+   #   requests:
+   #      cpu: "25m"
+   #      memory: "80Mi"
+   #   limits:
+   #      cpu: "25m"
+   #      memory: "80Mi"
+
    podSecurityContext:
       runAsUser: 1000
       fsGroup: 1000
@@ -480,8 +516,8 @@ apitraffic:
            value: liveness.apimgr
          scheme: HTTP
       initialDelaySeconds: 300
-      periodSeconds: 10
-      timeoutSeconds: 5
+      periodSeconds: 30
+      timeoutSeconds: 15
       failureThreshold: 3
       successThreshold: 1
 
@@ -544,6 +580,7 @@ apiportal:
          # host: "my-api-manager-host"
          # port: "8082"
       ssl:
+         # If you disable SSL for the API-Portal, please make sure to adjust the probes accordingly to use HTTP.
          enabled: true
          generateCertificates: true
          # Use an existing secret object for the required certificates. 
@@ -617,10 +654,6 @@ apiportal:
       #      - chart-example.local
 
    securityContext: {}
-
-   podSecurityContext:
-      runAsUser: 1048
-      fsGroup: 1048
 
    # If enabled required PVCs for the API-Portal are created
    persistence: 
@@ -697,6 +730,15 @@ apiportal:
       limits:
          cpu: "500m"
          memory: "1000Mi"
+
+   # Resources for all API-Portal Init-Containers
+   initResources: {}
+   #   requests:
+   #      cpu: "25m"
+   #      memory: "80Mi"
+   #   limits:
+   #      cpu: "25m"
+   #      memory: "80Mi"
 
    args: []
    # - /do/some/other/stuff
@@ -860,7 +902,7 @@ pvcs:
       accessModes: [ "ReadWriteOnce" ]
       resources:
          requests:
-            storage: 1Gi
+            storage: 2Gi
 
    apiportalImagesVolumeClaim: 
       accessModes: [ "ReadWriteOnce" ]
@@ -921,6 +963,10 @@ cassandra:
      # Use an existing secret object for dbUser.user password (will ignore dbUser.password)
      # Password must be stored using key: cassandra-password
      existingSecret: ""
+
+   service:
+     # Port is required here when using an external C* service
+     port: 9042
 
    cluster: 
      # Name of the cluster - You cannot change this later

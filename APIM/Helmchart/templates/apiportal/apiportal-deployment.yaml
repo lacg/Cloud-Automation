@@ -1,5 +1,6 @@
 {{- if .Values.apiportal.enabled -}}
 
+{{- $imageTag := include "apiportalImageTag" . -}}
 {{- $imagePullPolicy := include "imagePullPolicy" . -}}
 {{- $check := include "validateDockerRepo" . -}}
 {{- $apimgrName := include "apimgr.name" . -}}
@@ -93,10 +94,14 @@ spec:
       - name: init-mysql-apiportal
         image: busybox:1.33
         command: ['sh', '-c', 'until nc -w 3 -v {{ template "mysqlapiportal.name" . }} {{ .Values.mysqlapiportal.primary.service.port }}; do echo waiting for apiportal mysql; sleep 2; done;']
+        resources:
+{{ toYaml .Values.apiportal.initResources | indent 10 }}
       {{- end }}
       - name: init-apimgmt
         image: busybox:1.33
         command: ['sh', '-c', 'until nc -w 3 -v {{ template "apimgr.name" . }} 8075; do echo waiting for apimgr; sleep 2; done;']
+        resources:
+{{ toYaml .Values.apiportal.initResources | indent 10 }}
       {{- if .Values.apiportal.extraInitContainers }}
 {{ tpl .Values.apiportal.extraInitContainers . | indent 6 }}
       {{- end }}
@@ -112,7 +117,7 @@ spec:
       {{- end }}
         securityContext:
 {{ toYaml .Values.apiportal.securityContext | indent 10 }}
-        image: {{ template "apiportalDockerRepository" . }}/{{ required "apiportal.image is required" .Values.apiportal.image }}:{{ required "apiportal.imageTag is required" .Values.apiportal.imageTag }}
+        image: {{ template "apiportalDockerRepository" . }}/{{ required "apiportal.image is required" .Values.apiportal.image }}:{{ $imageTag }}
         imagePullPolicy: {{ $imagePullPolicy }}
         livenessProbe:
 {{ toYaml .Values.apiportal.livenessProbe | indent 10 }}
@@ -298,7 +303,7 @@ spec:
             {{- end }}
           {{- end }}
         {{- if .Values.apiportal.extraVolumeMounts }}
-{{ toYaml (.Values.apiportal.extraVolumeMounts ) | indent 8 }}
+{{ toYaml (.Values.apiportal.extraVolumeMounts ) | indent 10 }}
         {{- end }}
         {{- if .Values.apiportal.lifecycle }}
         lifecycle:

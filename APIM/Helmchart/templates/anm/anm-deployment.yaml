@@ -60,7 +60,7 @@ spec:
         {{- if .Values.anm.jvm.enabled }}
         - name: anm-jvmxml
           configMap:
-            name: jvmxml
+            name: {{ .Release.Name }}-jvmxml
             items:
               - key: anm-jvmxml
                 path: jvm.xml
@@ -95,6 +95,8 @@ spec:
       - name: init-mysql
         image: busybox:1.33
         command: ['sh', '-c', 'until nc -w 3 -v {{ template "mysqlmetrics.name" . }} {{ .Values.mysqlmetrics.primary.service.port }}; do echo waiting for mysql; sleep 2; done;']
+        resources:
+{{ toYaml .Values.anm.initResources | indent 10 }}
       {{- end }}
       {{- if .Values.anm.extraInitContainers }}
 {{ tpl .Values.anm.extraInitContainers . | indent 6 }}
@@ -189,7 +191,7 @@ spec:
             {{- end }}
           {{- end }}
         {{- if .Values.anm.extraVolumeMounts }}
-{{ toYaml (.Values.anm.extraVolumeMounts ) | indent 8 }}
+{{ toYaml (.Values.anm.extraVolumeMounts ) | indent 10 }}
         {{- end }}
         {{- if .Values.anm.lifecycle }}
         lifecycle:
