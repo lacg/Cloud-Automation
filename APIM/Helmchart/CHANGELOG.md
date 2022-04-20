@@ -2,10 +2,52 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.8.0] 2022-04-07
+
+### Added
+- Support to provide the FED-Configuration and other config files externally
+
+### Changed
+- Remove Binlogs of Metrics- and API-Portal-MySQL after 7 instead of 30 days
+- apitraffic probes now send the header k8sprobe: readiness.apitraffic instead of k8sprobe: readiness.apimgr
+- Updated Helm-Chart dependencies
+  - bitnami/mysql 8.8.26 --> 8.8.34
+  - bitnami/common 1.11.3 --> 1.13.0
+
+## [2.7.0] 2022-03-03
+
+### Added
+- Support for the 2022-Februray release
+  - Added require the new required flag `global.acceptGeneralConditions` to control the flag ACCEPT_GENERAL_CONDITIONS
+- By default OpenTraffic event log for the traceability agent is now disabled
+- Updated Helm-Chart dependencies
+  - bitnami/mysql 8.8.25 --> 8.8.26
+  - bitnami/common 1.11.1 --> 1.11.3
+
+## [2.6.0] 2022-02-23
+
+### Added
+- Support the Axway Amplify Discovery- and Traceability-Agents
+
+### Changed
+- Slightly adjusted standard Readiness and Liveness-Probes
+- Updated Helm-Chart dependencies
+  - bitnami/mysql 8.8.24 --> 8.8.25
+
+## [2.5.0] 2022-02-18
+
+### Added
+- The option to configure the sessionAffinity for ANM, API-Mgr, API-Traffic and API-Portal services
+
+### Changed
+- The default sessionAffinity for API-Traffic changed from ClientIP to None
+- Updated Helm-Chart dependencies
+  - bitnami/mysql 8.8.23 --> 8.8.24
+
 ## [2.4.0] 2022-02-15
 
 ### Added
-- Add the option to configure initResources for ANM, API-Mgr, API-Traffic and API-Portal
+- The option to configure initResources for ANM, API-Mgr, API-Traffic and API-Portal
 
 ## [2.3.1] 2022-02-14
 

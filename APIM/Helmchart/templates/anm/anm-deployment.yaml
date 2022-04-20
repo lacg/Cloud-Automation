@@ -43,6 +43,8 @@ spec:
       {{- end }}
       terminationGracePeriodSeconds: {{ .Values.anm.terminationGracePeriod }}
       volumes:
+        - name: merge-dir
+{{ toYaml .Values.anm.mergeDirVolume | indent 10 }}
         - name: events
 {{- if .Values.pvcs.events.enabled }}
           persistentVolumeClaim:
@@ -93,13 +95,13 @@ spec:
       initContainers:
       {{- if .Values.mysqlmetrics.internal }}
       - name: init-mysql
-        image: busybox:1.33
+        image: {{ default "busybox:1.33" .Values.global.initContainerImage | quote }}
         command: ['sh', '-c', 'until nc -w 3 -v {{ template "mysqlmetrics.name" . }} {{ .Values.mysqlmetrics.primary.service.port }}; do echo waiting for mysql; sleep 2; done;']
         resources:
 {{ toYaml .Values.anm.initResources | indent 10 }}
       {{- end }}
       {{- if .Values.anm.extraInitContainers }}
-{{ tpl .Values.anm.extraInitContainers . | indent 6 }}
+{{ toYaml .Values.anm.extraInitContainers | indent 6 }}
       {{- end }}
       containers:
       - name: "{{ template "anm.name" . }}"
@@ -135,6 +137,8 @@ spec:
         resources:
 {{ toYaml .Values.anm.resources | indent 10 }}
         env:
+        - name: ACCEPT_GENERAL_CONDITIONS
+          value: {{ required ".Values.global.acceptGeneralConditions must be set to yes" .Values.global.acceptGeneralConditions | quote }}
         - name: EMT_TOPOLOGY_TTL
           value: {{ default "120" .Values.anm.config.emtTopologyTtl | quote }}
         - name: EMT_DEPLOYMENT_ENABLED
@@ -174,6 +178,8 @@ spec:
 {{ toYaml .Values.anm.envFrom | indent 8 }}
         {{- end }}
         volumeMounts:
+          - name: merge-dir
+            mountPath: /merge
           - name: events
             mountPath: {{ default "/opt/Axway/apigateway/events" .Values.anm.volumeMountsPaths.events | quote }}
           - name: audit
