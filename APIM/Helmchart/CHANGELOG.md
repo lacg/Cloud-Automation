@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.10.1] 2022-05-19
+### Fixed
+- global.license was mounted to conf/licenses/license which is not accepted by the API-Gateways. Now it's using helm-global-license.lic
+
+## [2.10.0] 2022-05-09
+### Changed
+- Helm-Chart now released using a version tag without v (e.g. 2.10.0 )
+- Now using topologySpreadConstraint instead of podAntiAffinity by default
+- Updated Helm-Chart dependencies
+  - bitnami/common 1.13.0 --> 1.13.1
+  - bitnami/mysql 8.9.2 --> 8.9.6
+
+### Fixed
+- Using an existing license secret was not working as expected. Now it's.
+
+## [2.9.0] 2022-04-25
+
+### Changed
+- Standard POD Anti-Affinity for apitraffic to ensure API-Gateways are running on different worker nodes
+- Updated Helm-Chart dependencies
+  - bitnami/mysql 8.8.34 --> 8.9.2
+
+### Fixed
+- apitraffic deployment referenced wrong PCV audit instead of apigw-audit (#34)
+- Using an existing secret for CASS_PASS failed, when providing just the name of the secret as it's documented (#35)
+
 ## [2.8.0] 2022-04-07
 
 ### Added

@@ -77,6 +77,10 @@ spec:
       affinity:
 {{ toYaml . | indent 8 }}
       {{- end }}
+      {{- with .Values.apimgr.topologySpreadConstraints }}
+      topologySpreadConstraints:
+{{ toYaml . | indent 8 }}
+      {{- end }}
       {{- with .Values.apimgr.tolerations }}
       tolerations:
 {{ toYaml . | indent 8 }}
@@ -165,7 +169,10 @@ spec:
           value: {{ .Values.cassandra.dbUser.user }}
         - name: CASS_PASS
         {{- if .Values.cassandra.dbUser.existingSecret }}
-{{ toYaml .Values.cassandra.dbUser.existingSecret | indent 10 }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.cassandra.dbUser.existingSecret | quote }}
+              key: cassandra-password
         {{- else if .Values.cassandra.dbUser.password }}
           value: {{ .Values.cassandra.dbUser.password }}
         {{- else }}
@@ -200,8 +207,7 @@ spec:
         {{- end }}
 {{- if $licenseSecret }}
           - name: license
-            mountPath: "/opt/Axway/apigateway/conf/licenses/lic.lic"
-            subPath: license
+            mountPath: "/opt/Axway/apigateway/conf/licenses"
 {{- end }}
           - name: events
             mountPath: {{ default "/opt/Axway/apigateway/events" .Values.apimgr.volumeMountsPaths.events | quote }}

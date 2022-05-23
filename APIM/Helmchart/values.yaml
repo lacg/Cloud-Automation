@@ -23,9 +23,10 @@ global:
 
    # AZURE, OPENSHIFT, MINIKUBE
    platform: ""
-   # If you provide your license in your myValues.yaml, a Secret axway-apim-license will be created and automatically mountered 
+   # If you provide your license in your myValues.yaml, a Secret axway-apim-license will be created and automatically mounted 
    # into the API Gateway PODs. 
-   # Alternatively, you can use your own secret and reference it via licenseSecretName below.
+   # Alternatively, you can use your own secret and reference it via existingLicenseSecret below. Make sure, your secret key ends with 
+   # license.lic
    # Or you can build the image with the license included.
    # license: |
       # FIPS=1
@@ -40,6 +41,8 @@ global:
 
    # If you want to use your own secret, specify the name of the secret here, 
    # which contains the license Base64 encoded with key license
+   # For example 
+   # kubectl -n apim create secret generic axway-license --from-file=C:\temp\license.lic
    existingLicenseSecret: 
    # Sets the required flag ACCEPT_GENERAL_CONDITIONS for ANM, APIMGR and APITRAFFIC container
    acceptGeneralConditions: 
@@ -52,6 +55,8 @@ global:
 ##################################################################################################################################
 anm:
    enabled: true
+   # Don't configure more than 1 replica as it would lead an inconsitent view of the current topology. 
+   # See issue: https://github.com/Axway/Cloud-Automation/issues/38
    replicas: 1
    image: "anm"
    containerPorts:
@@ -152,6 +157,7 @@ anm:
    nodeSelector: {}
    tolerations: []
    affinity: {}
+   topologySpreadConstraints: {}
 
    nameOverride: ""
 
@@ -167,7 +173,7 @@ anm:
          path: /login
          port: anm
          scheme: HTTPS
-      initialDelaySeconds: 60
+      initialDelaySeconds: 30
       periodSeconds: 5
       successThreshold: 1
       timeoutSeconds: 1
@@ -180,7 +186,7 @@ anm:
          path: /login
          port: anm
          scheme: HTTPS
-      initialDelaySeconds: 120
+      initialDelaySeconds: 60
       periodSeconds: 60
       timeoutSeconds: 5
       failureThreshold: 3
@@ -227,6 +233,7 @@ anm:
 apimgr:
    enabled: true
    # For API-Manager it is recommended to have only 1 replica
+   # See issue: https://github.com/Axway/Cloud-Automation/issues/39
    replicas: 1
    nameOverride: ""
    image: "manager"
@@ -321,6 +328,11 @@ apimgr:
    podSecurityContext:
       runAsUser: 1000
       fsGroup: 1000
+
+   nodeSelector: {}
+   tolerations: []
+   affinity: {}
+   topologySpreadConstraints: {}
 
    readinessProbe:
       httpGet:
@@ -528,6 +540,38 @@ apitraffic:
    #      cpu: "25m"
    #      memory: "80Mi"
 
+   affinity: 
+      # By default this will make sure two API-Gateway pods don't end up on the same worker node
+      # podAntiAffinity:
+      #    # preferredDuringSchedulingIgnoredDuringExecution:
+      #    requiredDuringSchedulingIgnoredDuringExecution:
+      #    - labelSelector:
+      #        matchExpressions:
+      #        - key: app.kubernetes.io/name
+      #          operator: In
+      #          values:
+      #          - traffic
+      #      topologyKey: "kubernetes.io/hostname"
+   
+   topologySpreadConstraints: 
+      # Avoid scheduling of API-Gateways in the same availability zone
+      - maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            app.kubernetes.io/name: traffic
+      # Avoid scheduling of API-Gateways on the same node
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+           matchLabels:
+            app.kubernetes.io/name: traffic
+
+   nodeSelector: {}
+   tolerations: []
+
    podSecurityContext:
       runAsUser: 1000
       fsGroup: 1000
@@ -588,6 +632,16 @@ apitraffic:
             <VMArg name="-Dio.swagger.parser.util.RemoteUrl.trustAll=true"/>
             <VMArg name="-Dio.swagger.v3.parser.util.RemoteUrl.trustAll=true"/>
          </ConfigurationFragment>
+
+   # Configure pod autoscaling
+   # Min replicas uses value apitraffic.replicas if not set.
+   # Default trigger is CPU utilization.
+   autoscaling:
+      enabled: false
+      #minReplicas: 3
+      maxReplicas: 10
+      targetCPUUtilizationPercentage: 90
+      # targetMemoryUtilizationPercentage: 80
 
 ##################################################################################################################################
 #   API-Portal
@@ -722,6 +776,7 @@ apiportal:
    nodeSelector: {}
    tolerations: []
    affinity: {}
+   topologySpreadConstraints: {}
 
    nameOverride: ""
 
@@ -1267,7 +1322,7 @@ cassandra:
      # If defined, storageClassName: <storageClass>
      # If set to "-", storageClassName: "", which disables dynamic provisioning
      # If undefined (the default) or set to null, no storageClassName spec is
-     #   set, choosing the default provisioner.  (gp2 on AWS, standard on GKE, AWS & OpenStack)
+     #   set, choosing the default provisioner.  (gp3 on AWS, standard on GKE, AWS & OpenStack)
      storageClass: ""
      # @param persistence.size PVC Storage Request for Cassandra data volume
      size: 8Gi

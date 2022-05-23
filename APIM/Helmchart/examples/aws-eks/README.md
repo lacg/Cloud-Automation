@@ -42,7 +42,7 @@ If everything is set up correctly, DNS records like the one below are automatica
 #### Ingress-Controller
 
 By default, no Ingress controller is installed on the deployed AWS EKS Kubernetes cluster. 
-If this is not yet installed, please set it up as described here, as the Example-Values.yaml provided with the example annotations assumes that the AWS Load Balancer Controller is used.
+If this is not yet installed, please set it up as described [here](https://docs.aws.amazon.com/eks/latest/userguide/aws-load-balancer-controller.html), as the Example-Values.yaml provided with the example annotations assumes that the AWS Load Balancer Controller is used.
 
 ```
 kubectl get deployment -n kube-system aws-load-balancer-controller
@@ -66,7 +66,7 @@ You can either link the created certificate concretely using an appropriate ingr
 For the installation of our Helmchart you have to create and maintain for future upgrades your own `local-values.yaml` file. As a starter, you may use our AWS-EKS [example](aws-eks-example-values.yaml) as a base. Use the following command to get a local copy:  
 
 ```
-wget -o local-values-eks.yaml https://raw.githubusercontent.com/Axway/Cloud-Automation/master/APIM/Helmchart/examples/aws-eks/aws-eks-example-values.yaml
+curl -o local-values-eks.yaml https://raw.githubusercontent.com/Axway/Cloud-Automation/master/APIM/Helmchart/examples/aws-eks/aws-eks-example-values.yaml
 ```
 
 Now adjust the downloaded `local-values-eks.yaml` file according to your needs and version control it to make later upgrades safe and easy or to integrate it properly into your CI/CD-Pipeline.  
@@ -74,7 +74,7 @@ You can overwrite all parameters of the base [`values.yaml`](../../values.yaml),
 
 To finally start the deployment into your Kubernetes Cluster using Helm, use now the following command:
 ```
-helm install axway-apim -n apim -f .\local-values-eks.yaml https://github.com/Axway/Cloud-Automation/releases/download/apim-helm-v2.8.0/helm-chart-axway-apim-2.8.0.tgz
+helm install axway-apim -n apim -f .\local-values-eks.yaml https://github.com/Axway/Cloud-Automation/releases/download/apim-helm-2.10.1/helm-chart-axway-apim-2.10.1.tgz
 ```
 
 Now check if the resources, such as pods, ingresses, services, etc. are created and correct any problems that occur.
