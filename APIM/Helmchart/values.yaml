@@ -28,6 +28,7 @@ global:
    # Alternatively, you can use your own secret and reference it via existingLicenseSecret below. Make sure, your secret key ends with 
    # license.lic
    # Or you can build the image with the license included.
+   # For example
    # license: |
       # FIPS=1
       # SalesForce Connector=1
@@ -38,6 +39,7 @@ global:
       # ...
       # # SIGNATURE: 8eee280ede1a7fd94b91130c78da44f403f8bd9f927bc96bfd6a2a94839c049b
       # # SIGNATURE: 096e86bb928c5865c77596de3814f116b9b3f4923441ac0cb8e7189f9c0f5971
+   license: {}
 
    # If you want to use your own secret, specify the name of the secret here, 
    # which contains the license Base64 encoded with key license
@@ -49,6 +51,12 @@ global:
 
    # Setup the docker registry of the init image. By default busybox hosted on docker.io
    # initContainerImage: busybox:1.33
+
+   # Set the name of the ingress class to any components.
+   # It's possible to overwrite this value for each component.
+   # No default value and optional if only one ingress controller is deployed.
+   # Available only for Kubernetes version 1.18.x
+   ingressClassName: ""
 
 ##################################################################################################################################
 #   A D M I N - N O D E M A N A G E R
@@ -74,6 +82,9 @@ anm:
    # General ingress settings.
    ingress:
       enabled: true
+      # Set this value to overwrite the global value. 
+      # Useful to choose an Ingress controller that is listening on a different IP
+      ingressClassName: ""
       name: anm
       # Set the annotations according to your Ingress-Controller
       annotations: {}
@@ -227,6 +238,26 @@ anm:
             <VMArg name="-Ddont.expect.100.continue=true"/>
          </ConfigurationFragment>
 
+   # Enable envSettings.props. 
+   # No changes to do by default
+   envSettings:
+      enabled: false
+      #If not set, default value is the listener value service.port.
+      PortTraffic: ""
+      portSampleServices: ""
+      # the timeout for web manager user sessions in seconds
+      # Default value is 12 hours
+      webmanagerSessionTimeout: ""
+      # the idle timout for web manager user session, 30 minutes
+      # number of seconds of inactivity for session to be invalidated
+      webmanagerSessionIdleTimeout: ""
+      # Add custom config at the end of this file.
+      extraConfig: []
+         # An example of how you might bind a reference to a host-specific certificate to a given deployment. The
+         # SSL X509 Certificate in the 'SSL Interface' configuration item can then reference it using the binding
+         # variable '${env.serverCertificate}'
+         #env.serverCertificate=${system.prefix.cert}CN=MYHOST
+
 ##################################################################################################################################
 #   API MANAGER
 ##################################################################################################################################
@@ -286,6 +317,8 @@ apimgr:
    volumeMountsPaths:
       # Where to mount events (defaults to /opt/Axway/apigateway/events)
       events: ""
+      # Where to mount audit (defaults to /opt/Axway/apigateway/groups/emt-group/emt-service/logs)
+      audit: ""
 
    # Allows you to add any config files
    extraVolumes: []
@@ -305,6 +338,9 @@ apimgr:
 
    ingress:
       enabled: true
+      # Set this value to overwrite the global value. 
+      # Useful to choose an Ingress controller that is listening on a differnte IP
+      ingressClassName: ""
       annotations: {}
          # kubernetes.io/ingress.class: azure/application-gateway
          # appgw.ingress.kubernetes.io/backend-protocol: https
@@ -400,6 +436,12 @@ apimgr:
             <VMArg name="-Dio.swagger.v3.parser.util.RemoteUrl.trustAll=true"/>
          </ConfigurationFragment>
 
+   # Enable envSettings.props. 
+   # No changes to do by default
+   # Custom value is on apitraffic.envSettings section
+   envSettings:
+      enabled: false
+
 ##################################################################################################################################
 #   API TRAFFIC
 ##################################################################################################################################
@@ -421,6 +463,7 @@ apitraffic:
       plain: 8080
       tls: 8081
       oauth: 8089
+      mngt: 8085
    
    # Service and Ingress configuration for the API-Traffic PoD
    service:
@@ -486,6 +529,9 @@ apitraffic:
       # Please note: Only basic ingress settings are configured here. 
       # The individual ingress resources are configured for the individual service ports. 
       # See for example: service.ports.oauth.ingress....
+      # Set this value to overwrite the global value. 
+      # Useful to choose an Ingress controller that is listening on a different IP
+      ingressClassName: ""
       annotations: {}
          # kubernetes.io/ingress.class: azure/application-gateway
          # appgw.ingress.kubernetes.io/backend-protocol: https
@@ -643,6 +689,25 @@ apitraffic:
       targetCPUUtilizationPercentage: 90
       # targetMemoryUtilizationPercentage: 80
 
+   # Enable envSettings.props. 
+   # No changes to do by default
+   envSettings:
+      enabled: false
+      # The hostname of the OAuth Server 
+      # Defaults to localhost
+      oauthServer: ""
+      # The hostname of the OAuth Client 
+      # Defaults to localhost
+      oauthClient: ""
+      # the default port which OAuth 2.0 Client Services listen on for traffic
+      # Default value is 8088
+      oauthClientPort: ""
+      # the default AMA broker port
+      # Default value is 61616
+      brokerPort: ""
+      # Add additional lines at the end of the envSettings
+      extraConfig: []
+
 ##################################################################################################################################
 #   API-Portal
 ##################################################################################################################################
@@ -728,6 +793,9 @@ apiportal:
    ingress:
       enabled: true
       name: apiportal
+      # Set this value to overwrite the global value. 
+      # Useful to choose an Ingress controller that is listening on a different IP
+      ingressClassName: ""
       # Set the annotations according to your Ingress-Controller
       annotations: {}
          # kubernetes.io/ingress.class: azure/application-gateway
@@ -1222,7 +1290,7 @@ pvcs:
             requests:
                storage: 30Gi
 
-   # Trace is used by ANM
+   # Audit is used by APIMGR. 
    audit:
       # If disabled an emptyDir volume is used instead
       # Useful if you stream log information to an external logging system
@@ -1261,25 +1329,31 @@ pvcs:
       accessModes: [ "ReadWriteOnce" ]
       resources:
          requests:
-            storage: 2Mi
+            storage: 5Mi
 
    apiportalTemplatesVolumeClaim: 
       accessModes: [ "ReadWriteOnce" ]
       resources:
          requests:
-            storage: 5Mi
+            storage: 30Mi
 
    apiportalAdmLanguageVolumeClaim: 
       accessModes: [ "ReadWriteOnce" ]
       resources:
          requests:
-            storage: 2Mi
+            storage: 10Mi
 
    apiportalCertsVolumeClaim: 
       accessModes: [ "ReadWriteOnce" ]
       resources:
          requests:
             storage: 2Mi
+
+   apiportalPluginsVolumeClaim: 
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+         requests:
+            storage: 30Mi
 
 ##################################################################################################################################
 #   CASSANDRA DATABASE
@@ -1331,6 +1405,16 @@ cassandra:
      # Start a side-car prometheus exporter
      enabled: false
 
+   # We usually recommend not to specify default resources and to leave this as a conscious choice for the user.
+   # This also increases chances charts run on environments with little resources, such as Minikube.
+   # If you do want to specify resources, uncomment the CPU and memory values, adjust them as necessary, and remove the curly braces.
+   resources:
+     limits: {}
+         # cpu: 2
+         # memory: 4Gi
+     requests: {}
+         # cpu: 0.5
+         # memory: 1Gi
 
 ##################################################################################################################################
 #   EXTERNAL Metrics DB
@@ -1371,6 +1455,15 @@ externalApiportalDB: {}
      #    secretKeyRef: 
      #      name: my-secret
      #      key: my-key
+     ## Enable SSL encryption
+     ## Requires a secret not included in this chart
+     #- name: MYSQL_SSL_ON
+     #  value: "1"
+     #- name: MYSQL_SSL_CA_CERT
+     #  valueFrom: 
+     #    secretKeyRef: 
+     #      name: my-secret
+     #      key: my-key
 
 ##################################################################################################################################
 #   INTERNAL METRICS DATABASE
@@ -1397,6 +1490,21 @@ mysqlmetrics:
       # Configure to remove binLogs are 7 days instead of default 30
       extraFlags: "--binlog-expire-logs-seconds=604800"
 
+      nodeSelector: {}
+      securityContext: {}
+      tolerations: []
+      affinity: {}
+      # We usually recommend not to specify default resources and to leave this as a conscious choice for the user.
+      # This also increases chances charts run on environments with little resources, such as Minikube.
+      # If you do want to specify resources, uncomment the CPU and memory values, adjust them as necessary, and remove the curly braces.
+      resources:
+         limits: {}
+            # cpu: 0.5
+            # memory: 1Gi
+         requests: {}
+            # cpu: 250m
+            # memory: 256Mi
+
    ssl: false
 
    auth: 
@@ -1412,10 +1520,6 @@ mysqlmetrics:
       existingSecret: ""
 
    initdbScriptsConfigMap: metrics
-
-   nodeSelector: {}
-   tolerations: []
-   affinity: {}
 
 ##################################################################################################################################
 #   INTERNAL API-Portal DATABASE
@@ -1435,6 +1539,21 @@ mysqlapiportal:
          enabled: true
          existingClaim: apigw-mysql-apiportal
 
+      nodeSelector: {}
+      securityContext: {}
+      tolerations: []
+      affinity: {}
+      # We usually recommend not to specify default resources and to leave this as a conscious choice for the user.
+      # This also increases chances charts run on environments with little resources, such as Minikube.
+      # If you do want to specify resources, uncomment the CPU and memory values, adjust them as necessary, and remove the curly braces.
+      resources:
+         limits: {}
+            # cpu: 0.5
+            # memory: 1Gi
+         requests: {}
+            # cpu: 250m
+            # memory: 256Mi
+
       # Configure to remove binLogs are 7 days instead of default 30
       extraFlags: "--binlog-expire-logs-seconds=604800"
 
@@ -1449,12 +1568,6 @@ mysqlapiportal:
       password: "changeme"
       # An existing secret must contain the keys mysql-root-password / mysql-password
       existingSecret: ""
-
-   securityContext: {}
-
-   nodeSelector: {}
-   tolerations: []
-   affinity: {}
 
 ##################################################################################################################################
 #   INTERNAL REDIS DATABASE
@@ -1474,3 +1587,126 @@ base:
    useImagestream: false
    imageName: 
    imageTag: 
+
+##################################################################################################################################
+#   Filebeat - Operational Insights
+##################################################################################################################################
+# This section is dedicated to the Operational insights
+# If enabled, all api-agateways pod will have a filebeat container. 
+# Don't forget to adapt the the storage size for events and openlogging as recommended in the documentation.
+# The filebeat config is based on the operational master chart. 
+# The initial Helmchart provide more customization capabilities for Filebeat, like running it as a DaemontSet, etc. 
+# https://github.com/Axway-API-Management-Plus/apigateway-openlogging-elk/tree/develop/helm
+
+filebeat:
+   enabled: false
+   nameOverride:
+   image:
+     registry: docker.elastic.co
+     repository: beats/filebeat
+     tag: 7.17.1
+
+   # Boulean to activate or not filbeat on any components
+   componentEnabled:
+      anm: true
+      apimgr: true
+      apitraffic: true
+
+   # Secrets used to generate the secret <releaseName>-apim4elastic-filebeat-secret
+   # which is referenced below. 
+   # You may use your own secret and reference it here. 
+   # See templates/elasticApimKibana/filebeat-secret.yaml for the required environment variable names
+   # Disable the filebeatSecrets to use existing secret. Add custom values in extraEnvs section.
+   filebeatSecrets: 
+      enabled: true
+      beatsSystemUsername: "beats_system"
+      beatsSystemPassword: ""
+
+   # Set the gateway name.
+   # It's recommended to set a different name par API-Gateway Group.
+   # Value by default is API-Manager
+   gatewayName: ""
+   # Set the region name.
+   # It's recommended to set a different name per Admin Node Manager.
+   # Value by default is N/A
+   region: ""
+
+   # The Logstash Hosts used by Filebeat
+   # Set the Headless service when running in Kubernetes
+   # or to an external logstash cluster
+   logstashHosts: ""
+
+  # The Elasticsearch Hosts used by filebeat
+  # This must point to the Elasticsearch headless service when running in Kubernetes
+  # or to an exernal Elasticsearch cluster.
+   elasticsearchHosts: ""
+
+  # Required for the internal stack monitoring to work with Filebeat
+   elasticsearchClusterUUID: ""
+
+   # Used by all components to verify the Elasticsearch certificate. If you 
+   # have mounted your own certificate, you can overwrite the path here.
+   elasticsearchCaPath: "config/certificates/ca.crt"
+   # Define the name of an existing secret that contains the ca.crt
+   # If empty, the value a secret is created with the mamdatory value elasticSearchCa
+   elasticsearchCaSecret: ""
+   # Use this value to load the CA during the deployment
+   # It must be encoded in base64
+   elasticSearchCa: ""
+
+   # The number of Filebeat worker threads sending data to Logstash. See parameter: FILEBEAT_WORKER in env-sample
+   filebeatWorker: 2
+
+   # The gzip compression level. Setting this value to 0 disables compression. The compression level must be in the 
+   # range of 1 (best speed) to 9 (best compression). Increasing the compression level will reduce the network usage but will 
+   # increase the CPU usage.
+   compressionLevel: 3
+
+   # Stack monitoring for Filebeat, Logstash, Elasticsearch and Kibana using Self-Monitoring. 
+   # Metricbeat monitoring is not yet supported in the Kubernetes deployment.
+   selfMonitoringEnabled: "true"
+
+   # Configure the Elasticsearch server certificate validation for APIBuilder4Elastic. Is enabled by default.
+   # validateElasticsearchCertificate: "false"
+
+   # Extra volumes can be added for custom configuration.
+   # They must be added in volume in the apitraffic pod definition.
+   extraVolumeMounts: []
+   # - name: extras
+   #   mountPath: /usr/share/extras
+   #   readOnly: true
+
+   # Environment variables can be added for custom configuration.
+   # The following example add Logstash login/password secrets from an existing secret.
+   extraEnvs: []
+      # - name: BEATS_SYSTEM_USERNAME
+      #   valueFrom:
+      #    secretKeyRef:
+      #       name: logstash-secret
+      #       key: BEATS_SYSTEM_USERNAME
+      # - name: BEATS_SYSTEM_PASSWORD
+      #   valueFrom:
+      #    secretKeyRef:
+      #       name: logstash-secret
+      #       key: BEATS_SYSTEM_PASSWORD
+
+   # Replace the standard filebeat configuration by another
+   # It replace data in filebeat configmaps in folders anm, apitraffic and apimgr
+   anmCustomConfig: []
+   apimgrCustomConfig: []
+   apitrafficCustomConfig: []
+
+  # Recommended resource requests for Filebeat
+   resources:
+      requests:
+         cpu: "500m"
+         memory: "150Mi"
+      limits:
+         cpu: "1000m"
+         memory: "250Mi"
+
+
+   # Set the value of the API-Builder component.
+   # By default, host value is apibuilder4elastic and port value is 8443
+   apibuilder4elasticHost: ""
+   apibuilder4elasticPort: ""

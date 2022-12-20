@@ -1,24 +1,24 @@
 global:
-  imagePullSecrets:
-  - name: axway-demo-registry
 
   domainName: "kube.local.com"
-  dockerRepository: "axwayproductsdemo.azurecr.io"
-  imageTag: "20211130"
+  dockerRepository: "ghcr.io/axway"
+  imageTag: "20220830-1.0.0"
   # The default pull policy is set to Always because APIM docker images are recreated with the same image tage every 2 months.
   imagePullPolicy: "Always"
   acceptGeneralConditions: "yes"
+
+  ingressClassName: "nginx"
+
 
 ##################################################################################################################################
 #   A D M I N - N O D E M A N A G E R
 ##################################################################################################################################
 anm:
    enabled: true
-   image: "apim-anm-7.7"
+   image: "anm-demo-7.7"
    ingress:
       enabled: true
       annotations: 
-         kubernetes.io/ingress.class: nginx
          nginx.ingress.kubernetes.io/backend-protocol: HTTPS
 
       tls:
@@ -31,12 +31,11 @@ anm:
 ##################################################################################################################################
 apimgr:
    enabled: true
-   image: "apim-gtw-7.7"
-   imageTag: "20211130"
+   image: "gtw-demo-7.7"
+   imageTag: "20220830-1.0.0"
    ingress:
       enabled: true
       annotations: 
-         kubernetes.io/ingress.class: nginx
          nginx.ingress.kubernetes.io/backend-protocol: HTTPS
 
       tls:
@@ -49,14 +48,13 @@ apimgr:
 ##################################################################################################################################
 apitraffic:
    enabled: true
-   image: "apim-gtw-7.7"
-   imageTag: "20211130"
+   image: "gtw-demo-7.7"
+   imageTag: "20220830-1.0.0"
    replicas: 1
    ingress:
       enabled: true
       name: traffic
       annotations: 
-         kubernetes.io/ingress.class: nginx
          nginx.ingress.kubernetes.io/backend-protocol: HTTPS
 
       tls:
@@ -71,13 +69,12 @@ apitraffic:
 ##################################################################################################################################
 apiportal:
    enabled: true
-   image: "apim-portal-7.7"
-   imageTag: "20211130"
+   image: "portal-demo-7.7"
+   imageTag: "20220830-1.0.0"
    ingress:
       enabled: true
       name: portal
       annotations: 
-         kubernetes.io/ingress.class: nginx
          nginx.ingress.kubernetes.io/backend-protocol: HTTPS
 
    redis:

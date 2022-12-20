@@ -2,6 +2,37 @@
 
 All notable changes to this project will be documented in this file.
 
+# [2.11.3] 2022-12-01
+### Fixed
+- Remove FED injection for AWS example.
+- Add persistent volume for apiportal plugin folder.
+
+### Changed
+- Init documentation for helm configuration.
+- Migrate APIM demo docker images on the Clou-Automation repository.
+- Refine API-Portal PV default values.
+
+# [2.11.2] 2022-10-03
+### Fixed
+- Add missing secretMount values in volumeMounts section for apimgr and apitraffic.
+
+# [2.11.1] 2022-08-29
+### Fixed
+- Add beats system login/paswword environment variables on filebeat container.
+
+
+## [2.11.0] 2022-08-17
+### Fixed
+- It's not possible to set an Ingress class name with a Kubernetes version >1.22.X. Add IngressClassName value in spec section for any ingress. A different value can be set on each ingress. Adding some verifications to force usage of IngressClassName.
+- Change the Cassandra dependency repository to unblock generation of helm package.
+
+### Changed
+- Add Horizontal Pod Autoscaler capability on the APITRAFFIC deployment.
+- Add filebeat sidecar for Operational Insights component (ELK).
+- Add new volume for audit logs on apimgr pod.
+- Externalize envSettings.prop in a configmap.
+
+
 ## [2.10.1] 2022-05-19
 ### Fixed
 - global.license was mounted to conf/licenses/license which is not accepted by the API-Gateways. Now it's using helm-global-license.lic

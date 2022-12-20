@@ -12,6 +12,9 @@
 {{- end -}}
 {{- end -}}
 
+{{/*
+Admin Node Manager name
+*/}}
 {{- define "anm.name" -}}
 {{- if .Values.anm.nameOverride -}}
 {{ .Values.anm.nameOverride }}
@@ -64,6 +67,25 @@ API-Portal name - Short by default as it look nicer in the ANM-Topology view
 {{- define "mysqlapiportal.name" -}}
 {{- default .Chart.Name .Values.mysqlapiportal.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+
+{{/*
+Filebeat name 
+*/}}
+{{- define "filebeat.name" -}}
+{{- if .Values.filebeat.nameOverride -}}
+{{ .Values.filebeat.nameOverride }}
+{{- else -}}
+{{- "filebeat" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Filebeat certificate secret name
+*/}}
+{{- define "filebeat.certSecret.name" -}}
+{{- if .Values.filebeat.elasticsearchCaSecret }}{{ .Values.filebeat.elasticsearchCaSecret }}{{- else }}{{ template "filebeat.name" . }}-cert
+{{- end }}
+{{- end }}
 
 {{/*
 Return the secret with MySQL credentials as the Bitname chart does

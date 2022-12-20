@@ -154,9 +154,10 @@ Kubectl create ns apim
     Add a registry for the demo
     ```
     kubectl create secret docker-registry axway-demo-registry \
-        --docker-server=axwayproductsdemo.azurecr.io \ 
-        --docker-username=apim-demo \
-        --docker-password=3mL3FoB8Pb/lqIWZwmaf3oYV2zKr0W68 \ --docker-email=demo@axway.com -n apim
+    --docker-server=docker-registry.demo.axway.com/demo-public \
+    --docker-username='robot$demo-github' \
+    --docker-password="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NzA4MzAyMzYsImlhdCI6MTY2MzA1NDIzNiwiaXNzIjoiaGFyYm9yLXRva2VuLWRlZmF1bHRJc3N1ZXIiLCJpZCI6MTE2LCJwaWQiOjE2LCJhY2Nlc3MiOlt7IlJlc291cmNlIjoiL3Byb2plY3QvMTYvcmVwb3NpdG9yeSIsIkFjdGlvbiI6InB1bGwiLCJFZmZlY3QiOiIifSx7IlJlc291cmNlIjoiL3Byb2plY3QvMTYvaGVsbS1jaGFydCIsIkFjdGlvbiI6InJlYWQiLCJFZmZlY3QiOiIifV19.bMhjEatxETCDzgu1YMFacsj_gwH-KHwC1H1OaQ_2b77KzxPzoDM4iFzmReEMylQeaszcEZ4gdGYqHgME66DQC-qsSFlgprHGBPGTM6dSFeVQHXA_sfdNJYWgXFQFcq3lGiqqX4o56YxmtQgQznfBtkm8ijGLU0S7sMgFKU6GilTfyNNAVs0SvsTadKloPMXvZaBiM3hOlt22wV7LnBMPWnZY2r12WNa6uYRQEXHRsTvlOBC96Gf0SH3ofr9iVqd8FHs_yGtvkkZl9dYjf3oZ-7AtgKS33lJU-W1iQ-0xiaLNwj01MlVHlsmDJhdlZDN-7pVl4SX6VlHG915m6Nn6or6kb3A2HCzmENFerM7C3GCIdnE8rIknqbrvAvoO6a-hbRN6uUaWHmh0h0o_b1ZcwgKBJlmlnVlMufnGoeZOUwrV4_JDxg0U-W9NaUCKor9QXjqu-sJpAYXgCcBD1HFwpK3gRbXcrlIOMWMgQqq8yad9qvpeJtw5S2K6GROikd-kBdVEHn0vY-Noyq4fz0CwrxRE1fKEfgyfpqmQT_uUXGwBgbGFbfdMYYB8JPjgfvEx1DMVG_RsKEYfQ-fa7O1-t0eHvFCOgBixuzYNACOdi5-uf5KYn3kFyL4jxPLJDvWnBypu3BBOFTQLDv9KJ3pirhjQqrtYtwyKdHnel1USzl0" \
+    --docker-email=demo@axway.com -n apim
     ```
 
 8. Deploy APIM using HELM.
@@ -164,12 +165,13 @@ Kubectl create ns apim
     For the installation of our Helmchart you have to create and maintain for future upgrades your own `local-values.yaml` file. As a starter, you may use our Minikube [example](minikube-example-values.yaml) as a base. Use the following command to get a local copy:  
 
     ```
-    wget -o local-values-minikube.yaml https://raw.githubusercontent.com/Axway/Cloud-Automation/master/APIM/Helmchart/examples/minikube/minikube-example-values.yaml
+    wget -o local-values-minikube.yaml https://raw.githubusercontent.com/Axway/Cloud-Automation/master/APIM/Helmchart/examples/minikube/minikube-example-value.yaml
     ```
 
     To finally start the deployment into your Kubernetes Cluster using Helm, use now the following command:
     ```
-    helm install axway-apim -n apim -f .\local-values-minikube.yaml https://github.com/Axway/Cloud-Automation/releases/download/apim-helm-v2.9.0/helm-chart-axway-apim-2.9.0.tgz
+    helm install axway-apim -n apim -f .\local-values-minikube.yaml https://github.com/Axway/Cloud-Automation/releases/download/apim-helm-2.11.1/helm-chart-axway-apim-2.11.1.tgz
+
     ```
 
     Expected output example :
@@ -184,7 +186,7 @@ Kubectl create ns apim
 
     Then you can execute the following command until all pods are running
     ```bash
-    kubectl get po -A
+    kubectl get pods -n apim -w
     ```
     
     You should reach this status when APIM EMT is deployed :

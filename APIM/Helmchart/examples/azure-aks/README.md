@@ -55,7 +55,7 @@ Add a registry for the demo
 kubectl create secret docker-registry axway-demo-registry \
     --docker-server=docker-registry.demo.axway.com/demo-public \
     --docker-username='robot$demo-github' \
-    --docker-password="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NTQ0NTM5OTMsImlhdCI6MTY0NjY3Nzk5MywiaXNzIjoiaGFyYm9yLXRva2VuLWRlZmF1bHRJc3N1ZXIiLCJpZCI6NjMsInBpZCI6MTYsImFjY2VzcyI6W3siUmVzb3VyY2UiOiIvcHJvamVjdC8xNi9yZXBvc2l0b3J5IiwiQWN0aW9uIjoicHVsbCIsIkVmZmVjdCI6IiJ9LHsiUmVzb3VyY2UiOiIvcHJvamVjdC8xNi9oZWxtLWNoYXJ0IiwiQWN0aW9uIjoicmVhZCIsIkVmZmVjdCI6IiJ9XX0.CWhcKlWG3Mflkq7M2FAZ0oFgvktpUFduL2fKLARPTapY5Sm9f6nQmL8ql7QZWGq0Zu6kFLnE9bhRZB7lLGYxFYA1Rs4TA7Q3hB6qxfpZcCSOuw2l_VQNY9aoHS_yC1v-uYJorrJA2ba1sOgy7WyOm9BXnrvcZl5aUGbiAh1S7qZlFEiUOJEjYkdU3hP1-uU-FvEW60yEd1StWj9mJM_Ykonuv8xl-pffmnCzGMWhyhH2NDLuROXHpxMO0b_yTlkUDjAsxkuarpsDbSf8SJSDn82KW5lSjEXuXk2IixQClS6MIhvkciKX1zZ1pbQpV09-l1xxpoAOkcZSodZv6T6S8kKwZ7b0f3Jd3WHBJsfPIpHVKoqH0O9JFlZk3-vh1_yGmIOovIYX1yKN0tfwsWNIA_Ul72zq0ewcTEioJX3PDvsAl1bDsry5xAADkd5xXDsJC3CEN4n1xvsdNr0Lk7-z0vvWFNy1ZecOkJpTb-OrPl6bC6hnhmqRHnxnvImlCIkj9tUX0CHQTxEwjmnvwwPLb0LgtTAAwBvaAG9-ZHIcLtBap45AIw1RESPT1F6ghJkDRM7HYxkisH73WgUjKTwE6QwnZNSTgHMxjY9ZDtjOjF6A66y3fK-49V1EMZvUCFtMEkXsVNhu4hJmDCINXq_0XcSFzLYj2rPVdwwLzWWN07M" \
+    --docker-password="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NzA4MzAyMzYsImlhdCI6MTY2MzA1NDIzNiwiaXNzIjoiaGFyYm9yLXRva2VuLWRlZmF1bHRJc3N1ZXIiLCJpZCI6MTE2LCJwaWQiOjE2LCJhY2Nlc3MiOlt7IlJlc291cmNlIjoiL3Byb2plY3QvMTYvcmVwb3NpdG9yeSIsIkFjdGlvbiI6InB1bGwiLCJFZmZlY3QiOiIifSx7IlJlc291cmNlIjoiL3Byb2plY3QvMTYvaGVsbS1jaGFydCIsIkFjdGlvbiI6InJlYWQiLCJFZmZlY3QiOiIifV19.bMhjEatxETCDzgu1YMFacsj_gwH-KHwC1H1OaQ_2b77KzxPzoDM4iFzmReEMylQeaszcEZ4gdGYqHgME66DQC-qsSFlgprHGBPGTM6dSFeVQHXA_sfdNJYWgXFQFcq3lGiqqX4o56YxmtQgQznfBtkm8ijGLU0S7sMgFKU6GilTfyNNAVs0SvsTadKloPMXvZaBiM3hOlt22wV7LnBMPWnZY2r12WNa6uYRQEXHRsTvlOBC96Gf0SH3ofr9iVqd8FHs_yGtvkkZl9dYjf3oZ-7AtgKS33lJU-W1iQ-0xiaLNwj01MlVHlsmDJhdlZDN-7pVl4SX6VlHG915m6Nn6or6kb3A2HCzmENFerM7C3GCIdnE8rIknqbrvAvoO6a-hbRN6uUaWHmh0h0o_b1ZcwgKBJlmlnVlMufnGoeZOUwrV4_JDxg0U-W9NaUCKor9QXjqu-sJpAYXgCcBD1HFwpK3gRbXcrlIOMWMgQqq8yad9qvpeJtw5S2K6GROikd-kBdVEHn0vY-Noyq4fz0CwrxRE1fKEfgyfpqmQT_uUXGwBgbGFbfdMYYB8JPjgfvEx1DMVG_RsKEYfQ-fa7O1-t0eHvFCOgBixuzYNACOdi5-uf5KYn3kFyL4jxPLJDvWnBypu3BBOFTQLDv9KJ3pirhjQqrtYtwyKdHnel1USzl0" \
     --docker-email=demo@axway.com -n apim-demo
 ```
 
@@ -79,7 +79,7 @@ You can overwrite all parameters of the base [`values.yaml`](../../values.yaml),
 
 To finally start the deployment into your Kubernetes Cluster using Helm, use now the following command:
 ```
-helm install axway-apim -n apim -f .\local-values-aks-noingress.yaml https://github.com/Axway/Cloud-Automation/releases/download/apim-helm-2.10.1/helm-chart-axway-apim-2.10.1.tgz
+helm install axway-apim -n apim -f .\local-values-aks-noingress.yaml https://github.com/Axway/Cloud-Automation/releases/download/apim-helm-2.11.3/helm-chart-axway-apim-2.11.3.tgz
 ```
 
 Now wait that all containers are up and in running state with the following command : 
@@ -196,7 +196,7 @@ Add a registry for the demo
 kubectl create secret docker-registry axway-demo-registry \
     --docker-server=docker-registry.demo.axway.com/demo-public \
     --docker-username='robot$demo-github' \
-    --docker-password="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NTQ0NTM5OTMsImlhdCI6MTY0NjY3Nzk5MywiaXNzIjoiaGFyYm9yLXRva2VuLWRlZmF1bHRJc3N1ZXIiLCJpZCI6NjMsInBpZCI6MTYsImFjY2VzcyI6W3siUmVzb3VyY2UiOiIvcHJvamVjdC8xNi9yZXBvc2l0b3J5IiwiQWN0aW9uIjoicHVsbCIsIkVmZmVjdCI6IiJ9LHsiUmVzb3VyY2UiOiIvcHJvamVjdC8xNi9oZWxtLWNoYXJ0IiwiQWN0aW9uIjoicmVhZCIsIkVmZmVjdCI6IiJ9XX0.CWhcKlWG3Mflkq7M2FAZ0oFgvktpUFduL2fKLARPTapY5Sm9f6nQmL8ql7QZWGq0Zu6kFLnE9bhRZB7lLGYxFYA1Rs4TA7Q3hB6qxfpZcCSOuw2l_VQNY9aoHS_yC1v-uYJorrJA2ba1sOgy7WyOm9BXnrvcZl5aUGbiAh1S7qZlFEiUOJEjYkdU3hP1-uU-FvEW60yEd1StWj9mJM_Ykonuv8xl-pffmnCzGMWhyhH2NDLuROXHpxMO0b_yTlkUDjAsxkuarpsDbSf8SJSDn82KW5lSjEXuXk2IixQClS6MIhvkciKX1zZ1pbQpV09-l1xxpoAOkcZSodZv6T6S8kKwZ7b0f3Jd3WHBJsfPIpHVKoqH0O9JFlZk3-vh1_yGmIOovIYX1yKN0tfwsWNIA_Ul72zq0ewcTEioJX3PDvsAl1bDsry5xAADkd5xXDsJC3CEN4n1xvsdNr0Lk7-z0vvWFNy1ZecOkJpTb-OrPl6bC6hnhmqRHnxnvImlCIkj9tUX0CHQTxEwjmnvwwPLb0LgtTAAwBvaAG9-ZHIcLtBap45AIw1RESPT1F6ghJkDRM7HYxkisH73WgUjKTwE6QwnZNSTgHMxjY9ZDtjOjF6A66y3fK-49V1EMZvUCFtMEkXsVNhu4hJmDCINXq_0XcSFzLYj2rPVdwwLzWWN07M" \
+    --docker-password="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NzA4MzAyMzYsImlhdCI6MTY2MzA1NDIzNiwiaXNzIjoiaGFyYm9yLXRva2VuLWRlZmF1bHRJc3N1ZXIiLCJpZCI6MTE2LCJwaWQiOjE2LCJhY2Nlc3MiOlt7IlJlc291cmNlIjoiL3Byb2plY3QvMTYvcmVwb3NpdG9yeSIsIkFjdGlvbiI6InB1bGwiLCJFZmZlY3QiOiIifSx7IlJlc291cmNlIjoiL3Byb2plY3QvMTYvaGVsbS1jaGFydCIsIkFjdGlvbiI6InJlYWQiLCJFZmZlY3QiOiIifV19.bMhjEatxETCDzgu1YMFacsj_gwH-KHwC1H1OaQ_2b77KzxPzoDM4iFzmReEMylQeaszcEZ4gdGYqHgME66DQC-qsSFlgprHGBPGTM6dSFeVQHXA_sfdNJYWgXFQFcq3lGiqqX4o56YxmtQgQznfBtkm8ijGLU0S7sMgFKU6GilTfyNNAVs0SvsTadKloPMXvZaBiM3hOlt22wV7LnBMPWnZY2r12WNa6uYRQEXHRsTvlOBC96Gf0SH3ofr9iVqd8FHs_yGtvkkZl9dYjf3oZ-7AtgKS33lJU-W1iQ-0xiaLNwj01MlVHlsmDJhdlZDN-7pVl4SX6VlHG915m6Nn6or6kb3A2HCzmENFerM7C3GCIdnE8rIknqbrvAvoO6a-hbRN6uUaWHmh0h0o_b1ZcwgKBJlmlnVlMufnGoeZOUwrV4_JDxg0U-W9NaUCKor9QXjqu-sJpAYXgCcBD1HFwpK3gRbXcrlIOMWMgQqq8yad9qvpeJtw5S2K6GROikd-kBdVEHn0vY-Noyq4fz0CwrxRE1fKEfgyfpqmQT_uUXGwBgbGFbfdMYYB8JPjgfvEx1DMVG_RsKEYfQ-fa7O1-t0eHvFCOgBixuzYNACOdi5-uf5KYn3kFyL4jxPLJDvWnBypu3BBOFTQLDv9KJ3pirhjQqrtYtwyKdHnel1USzl0" \
     --docker-email=demo@axway.com -n apim
 ```
 
@@ -218,7 +218,7 @@ You can overwrite all parameters of the base [`values.yaml`](../../values.yaml),
 
 To finally start the deployment into your Kubernetes Cluster using Helm, use now the following command:
 ```
-helm install axway-apim -n apim -f .\local-values-aks-agic.yaml https://github.com/Axway/Cloud-Automation/releases/download/apim-helm-2.10.1/helm-chart-axway-apim-2.10.1.tgz
+helm install axway-apim -n apim -f .\local-values-aks-agic.yaml https://github.com/Axway/Cloud-Automation/releases/download/apim-helm-2.11.3/helm-chart-axway-apim-2.11.3.tgz
 ```
 
 Now wait that all containers are up and in running state with the following command : 
